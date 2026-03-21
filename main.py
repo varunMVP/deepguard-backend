@@ -4,6 +4,10 @@ import shutil, os, uuid, time
 from model1 import DeepfakeDetector
 from model2 import LieDetector
 
+# Auto download models if not present
+from download_models import download_models
+download_models()
+
 app = FastAPI()
 
 app.add_middleware(
