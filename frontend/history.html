@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepGuard — History</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .history-page { padding-top: 80px; min-height: 100vh; }
+        .history-container { max-width: 900px; margin: 0 auto; padding: 3rem 2rem; }
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .history-title { font-size: 1.8rem; font-weight: 800; color: #fff; }
+        .history-count {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--muted);
+            letter-spacing: 1px;
+        }
+        .history-table {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .table-header {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+        }
+        .table-header span {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            letter-spacing: 1.5px;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+        .table-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            align-items: center;
+            transition: background 0.2s;
+        }
+        .table-row:last-child { border-bottom: none; }
+        .table-row:hover { background: rgba(255,255,255,0.02); }
+        .table-row span {
+            font-size: 0.82rem;
+            color: var(--text);
+        }
+        .table-row .filename {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--muted);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .status-badge {
+            display: inline-flex;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .status-authenticated { background: rgba(16,185,129,0.15); color: var(--success); }
+        .status-suspicious    { background: rgba(245,158,11,0.15); color: var(--warn); }
+        .status-rejected      { background: rgba(244,63,94,0.15);  color: var(--danger); }
+        .status-error         { background: rgba(100,116,139,0.15); color: var(--muted); }
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--muted);
+        }
+        .empty-state .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .empty-state h3 { font-size: 1rem; color: var(--text); margin-bottom: 0.5rem; }
+        .empty-state p { font-size: 0.85rem; }
+        .loading-history {
+            text-align: center;
+            padding: 3rem;
+            color: var(--muted);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+        }
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--muted);
+            text-decoration: none;
+            letter-spacing: 0.5px;
+            transition: color 0.2s;
+            margin-bottom: 2rem;
+        }
+        .back-btn:hover { color: var(--accent); }
+        @media(max-width: 600px) {
+            .table-header { grid-template-columns: 1fr 1fr 1fr; }
+            .table-row    { grid-template-columns: 1fr 1fr 1fr; }
+            .table-header span:nth-child(4),
+            .table-header span:nth-child(5),
+            .table-header span:nth-child(6),
+            .table-row span:nth-child(4),
+            .table-row span:nth-child(5),
+            .table-row span:nth-child(6) { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="navbar">
+    <div class="nav-left">
+        <div class="logo">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                <polygon points="16,2 30,10 30,22 16,30 2,22 2,10" fill="none" stroke="#00f5c4" stroke-width="1.5"/>
+                <polygon points="16,7 25,12 25,20 16,25 7,20 7,12" fill="none" stroke="#00f5c4" stroke-width="1" opacity="0.5"/>
+                <circle cx="16" cy="16" r="3" fill="#00f5c4"/>
+            </svg>
+            <span class="logo-text">DEEP<span class="accent">GUARD</span></span>
+        </div>
+    </div>
+    <nav class="nav-links">
+        <a href="index.html" class="nav-link">Analyze</a>
+        <a href="history.html" class="nav-link" style="color:var(--accent)">History</a>
+    </nav>
+    <div class="nav-right">
+        <span class="status-text" id="userEmail" style="color:var(--muted);font-size:0.75rem"></span>
+        <button onclick="signOut()" style="background:transparent;border:1px solid var(--border);color:var(--muted);font-family:var(--font-mono);font-size:0.7rem;padding:0.35rem 0.75rem;border-radius:4px;cursor:pointer;letter-spacing:0.5px;margin-left:1rem">
+            Sign Out
+        </button>
+    </div>
+</header>
+
+<div class="history-page">
+    <div class="history-container">
+        <a href="index.html" class="back-btn">← Back to Analysis</a>
+
+        <div class="history-header">
+            <div>
+                <div class="section-label">ANALYSIS HISTORY</div>
+                <h1 class="history-title">Your Past Results</h1>
+            </div>
+            <span class="history-count" id="historyCount"></span>
+        </div>
+
+        <div class="history-table" id="historyTable">
+            <div class="loading-history">Loading history...</div>
+        </div>
+    </div>
+</div>
+
+<script src="auth.js"></script>
+<script>
+    async function init() {
+        const user = await requireAuth();
+        if (!user) return;
+
+        document.getElementById('userEmail').textContent = user.email;
+
+        const history = await getAnalysisHistory();
+        document.getElementById('historyCount').textContent =
+            `${history.length} total analyses`;
+
+        renderHistory(history);
+    }
+
+    function renderHistory(history) {
+        const table = document.getElementById('historyTable');
+
+        if (history.length === 0) {
+            table.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">🔍</div>
+                    <h3>No analyses yet</h3>
+                    <p>Upload a video or image to get started</p>
+                </div>`;
+            return;
+        }
+
+        table.innerHTML = `
+            <div class="table-header">
+                <span>File</span>
+                <span>Type</span>
+                <span>Status</span>
+                <span>Trust</span>
+                <span>Deepfake</span>
+                <span>Date</span>
+            </div>
+            ${history.map(row => `
+                <div class="table-row">
+                    <span class="filename">${row.filename || 'unknown'}</span>
+                    <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--muted)">
+                        ${(row.input_type || '').toUpperCase()}
+                    </span>
+                    <span>
+                        <span class="status-badge status-${(row.status||'').toLowerCase()}">
+                            ${row.status || '—'}
+                        </span>
+                    </span>
+                    <span style="font-family:var(--font-mono);color:var(--accent)">
+                        ${row.trust_score ? Math.round(row.trust_score) + '%' : '—'}
+                    </span>
+                    <span style="font-family:var(--font-mono);font-size:0.72rem;
+                        color:${row.deepfake_result === 'REAL' ? 'var(--success)' : row.deepfake_result === 'FAKE' ? 'var(--danger)' : 'var(--muted)'}">
+                        ${row.deepfake_result || '—'}
+                    </span>
+                    <span style="font-family:var(--font-mono);font-size:0.68rem;color:var(--muted)">
+                        ${new Date(row.created_at).toLocaleDateString('en-IN', {
+                            day:'2-digit', month:'short', year:'numeric'
+                        })}
+                    </span>
+                </div>
+            `).join('')}`;
+    }
+
+    init();
+</script>
+</body>
+</html>
