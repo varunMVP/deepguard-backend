@@ -7,7 +7,7 @@
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Netlify-00C7B7?style=for-the-badge&logo=netlify&logoColor=white)](https://preeminent-meringue-ffde50.netlify.app)
 [![Model 1 Accuracy](https://img.shields.io/badge/Deepfake%20Accuracy-97.05%25-success?style=for-the-badge)](https://preeminent-meringue-ffde50.netlify.app)
 [![Model 2 Accuracy](https://img.shields.io/badge/Behavior%20Accuracy-87.06%25-blue?style=for-the-badge)](https://preeminent-meringue-ffde50.netlify.app)
-[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
+
 
 **Detect deepfakes. Expose deception. Authenticate media.**
 
