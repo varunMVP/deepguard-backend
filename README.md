@@ -185,6 +185,8 @@ Threshold   : deceptive_prob ≥ 38% → SUSPICIOUS
 | **Std** | **2.74%** |
 
 ---
+<img width="1506" height="803" alt="image" src="https://github.com/user-attachments/assets/b6b3b396-ca67-441b-9609-a6ecb09770a0" />
+
 
 ## 🛠️ Tech Stack
 
@@ -309,11 +311,6 @@ deepguard/
 
 ---
 
-## 📜 License
-
-This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
-
----
 
 ## 🙏 Acknowledgements
 
